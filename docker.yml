@@ -1,0 +1,55 @@
+---
+- hosts: docker
+  gather_facts: no
+ # connection: local
+
+
+  tasks:
+    - name: creating containers
+      docker_container:
+        name: webapplication
+        state: started
+        image: nginx:latest
+        published_ports: 9090:80
+    - debug:
+        msg: "webapplication container created successfully"
+    #- pause:
+    - name: Creating a Network for webapplication
+      docker_network:
+        name: webnet
+        state: present
+    - debug:
+        msg: "network webnet created successfully"
+    #- pause:
+    - name: Connect a exisiting Container to a existing network
+      docker_network:
+       name: webnet
+       connected:
+         - webapplication
+    - debug:
+        msg: "network webnet created successfully"
+    #- pause:
+
+    - name: Creating a new network for OS
+      docker_network:
+       name: appnet
+       state: present
+    - debug:
+        msg: "New network for OS created successfully"
+    #- pause:
+
+    - name: Create a container with Persisted Storage and also to connect to a network
+      docker_container:
+        name: appServer
+        state: started
+        image: ubuntu:latest
+        networks:
+          - name: appnet
+        volumes:
+          - /container/appserver:/data
+#        detach: no
+        interactive: yes
+        command: /bin/bash
+    - debug:
+        msg: "Created container with Persisted Storage and also to connect to a network Successfully"
+    #- pause:
