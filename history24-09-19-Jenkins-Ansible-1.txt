@@ -1,0 +1,260 @@
+    1  #!/bin/bash
+    2  trap '[ "$?" -eq 0 ] || read -p "Looks like something went wrong in step ´$STEP´... Press any key to continue..."' EXIT
+    3  #Quick Hack: used to convert e.g. "C:\Program Files\Docker Toolbox" to "/c/Program Files/Docker Toolbox"
+    4  win_to_unix_path(){  	wd="$(pwd)"; 	cd "$1"; 		the_path="$(pwd)"; 	cd "$wd"; 	echo $the_path; }
+    5  # This is needed  to ensure that binaries provided
+    6  # by Docker Toolbox over-ride binaries provided by
+    7  # Docker for Windows when launching using the Quickstart.
+    8  export PATH="$(win_to_unix_path "${DOCKER_TOOLBOX_INSTALL_PATH}"):$PATH"
+    9  VM=${DOCKER_MACHINE_NAME-default}
+   10  DOCKER_MACHINE="${DOCKER_TOOLBOX_INSTALL_PATH}\docker-machine.exe"
+   11  STEP="Looking for vboxmanage.exe"
+   12  if [ ! -z "$VBOX_MSI_INSTALL_PATH" ]; then   VBOXMANAGE="${VBOX_MSI_INSTALL_PATH}VBoxManage.exe"; else   VBOXMANAGE="${VBOX_INSTALL_PATH}VBoxManage.exe"; fi
+   13  BLUE='\033[1;34m'
+   14  GREEN='\033[0;32m'
+   15  NC='\033[0m'
+   16  #clear all_proxy if not socks address
+   17  if  [[ $ALL_PROXY != socks* ]]; then   unset ALL_PROXY; fi
+   18  if  [[ $all_proxy != socks* ]]; then   unset all_proxy; fi
+   19  if [ ! -f "${DOCKER_MACHINE}" ]; then   echo "Docker Machine is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   20  if [ ! -f "${VBOXMANAGE}" ]; then   echo "VirtualBox is not installed. Please re-run the Toolbox Installer and try again.";   exit 1; fi
+   21  "${VBOXMANAGE}" list vms | grep \""${VM}"\" &> /dev/null
+   22  VM_EXISTS_CODE=$?
+   23  set -e
+   24  STEP="Checking if machine $VM exists"
+   25  if [ $VM_EXISTS_CODE -eq 1 ]; then   "${DOCKER_MACHINE}" rm -f "${VM}" &> /dev/null || :;   rm -rf ~/.docker/machine/machines/"${VM}"   if [ "${HTTP_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTP_PROXY=$HTTP_PROXY";   fi;   if [ "${HTTPS_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env HTTPS_PROXY=$HTTPS_PROXY";   fi;   if [ "${NO_PROXY}" ]; then     PROXY_ENV="$PROXY_ENV --engine-env NO_PROXY=$NO_PROXY";   fi;   "${DOCKER_MACHINE}" create -d virtualbox $PROXY_ENV "${VM}"; fi
+   26  STEP="Checking status on $VM"
+   27  VM_STATUS="$( set +e ; "${DOCKER_MACHINE}" status "${VM}" )"
+   28  if [ "${VM_STATUS}" != "Running" ]; then   "${DOCKER_MACHINE}" start "${VM}";   yes | "${DOCKER_MACHINE}" regenerate-certs "${VM}"; fi
+   29  STEP="Setting env"
+   30  eval "$("${DOCKER_MACHINE}" env --shell=bash --no-proxy "${VM}" | sed -e "s/export/SETX/g" | sed -e "s/=/ /g")" &> /dev/null #for persistent Environment Variables, available in next sessions
+   31  eval "$("${DOCKER_MACHINE}" env --shell=bash --no-proxy "${VM}")" #for transient Environment Variables, available in current session
+   32  STEP="Finalize"
+   33  clear
+   34  cat << EOF
+   35                          ##         .
+   36                    ## ## ##        ==
+   37                 ## ## ## ## ##    ===
+   38             /"""""""""""""""""\___/ ===
+   39        ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+   40             \______ o           __/
+   41               \    \         __/
+   42                \____\_______/
+   43  EOF
+   44  echo -e "${BLUE}docker${NC} is configured to use the ${GREEN}${VM}${NC} machine with IP ${GREEN}$("${DOCKER_MACHINE}" ip ${VM})${NC}"
+   45  echo "For help getting started, check out the docs at https://docs.docker.com"
+   46  echo
+   47  echo 
+   48  #cd #Bad: working dir should be whatever directory was invoked from rather than fixed to the Home folder
+   49  docker () {   MSYS_NO_PATHCONV=1 docker.exe "$@"; }
+   50  export -f docker
+   51  if [ $# -eq 0 ]; then   echo "Start interactive shell";   exec "$BASH" --login -i; else   echo "Start shell with command";   exec "$BASH" -c "$*"; fi
+   52  docker login
+   53  docker login
+   54  dashdio
+   55  docker login
+   56  docker-machine ls
+   57  docker-machine start sgfirst
+   58  docker login
+   59  docker-machine env sgfirst
+   60  eval $("C:\Program Files\Docker Toolbox\docker-machine.exe" env sgfirst)
+   61  docker login
+   62  winpty docker login
+   63  clear
+   64  clear
+   65  docker-machine ls
+   66  docker-machine env sgfirst
+   67  eval $("C:\Program Files\Docker Toolbox\docker-machine.exe" env sgfirst)
+   68  docker-machine activve
+   69  docker-machine active
+   70  docker network
+   71  docker network create sogennet
+   72  docker network ls
+   73  docker network inspect sogennet
+   74  docker network inspect bridge
+   75  docker network ls
+   76  docker network inspect host
+   77  docker network inspect bridge
+   78  docker ps
+   79  docker ps -a
+   80  docker container start socgen_ubuntu
+   81  docker container start bind_test
+   82  docker container start volume_test
+   83  clear
+   84  docker ps
+   85  docker network inspect bridge
+   86  docker network connect socgen_ubuntu
+   87* docker network connect sogennet socgen_ubuntu[B
+   88  docker network inspect sogennet
+   89  docker container inspect socgen_ubuntu
+   90  docker network inspect bridge
+   91  docker network disconnect bridge socgen_ubuntu
+   92  docker network inspect bridge
+   93  docker container inspect socgen_ubuntu
+   94  docker run --network sogennet --name netadd -dit ubuntu /bin/bash
+   95  docker run --network sogennet --name netadd -dit ubuntu
+   96  ocker ps
+   97  docker ps
+   98  docker ps -a 
+   99  docker run --network sogennet --name netadd -dit ubuntu "/bin/bash"
+  100  docker run --network sogennet --name netadd2 -dit ubuntu "/bin/bash"
+  101* docker run --network sogennet --name netadd2 -dit ubuntu "/bin/bash"
+  102  docker run --network sogennet --name netadd2 -dit ubuntu "bash"
+  103* docker run --network sogennet --name netadd3 -dit ubuntu "bash"[B
+  104  docker network inspect sogennet
+  105  docker container insspect netadd3
+  106  docker container inspect netadd3
+  107  docker image ls
+  108  docker image tag ubuntu dhana/ubuntu:v1.0
+  109  docker image ls
+  110  docker image tag hello-world hrb1989/hellosocgen:v1.0
+  111  docker image ls
+  112  docker push hrb1989/hellosocgen
+  113  docker search hellosocgen
+  114  docker search hellosocgen
+  115  docker search hellosocgen
+  116  docker search hellosocgen
+  117  docker push dhana/ubuntu
+  118  docker search hellosocgen
+  119  docker search hrb1989/hellosocgen
+  120  pwd
+  121  history >> /d/history24-09-19-docker.txt
+  122  clear
+  123  docker pull jacekkow/gitblit
+  124  docker image ls
+  125  docker run -d --name=gitblit -p 8080:8080 -p 8443:8443 -p 9418:9418 -p 29418:29418 jacekkow/gitblit
+  126  docker-machine ip sgfirst
+  127  clear
+  128  git version
+  129  git --help
+  130  pwd
+  131  cd /d
+  132  mkdir repos
+  133  cd repos/
+  134  ls
+  135  mkdir firstrepo
+  136  cd firstrepo/
+  137  git init
+  138  cat .git
+  139  cd .git/
+  140  ls
+  141  cd ..
+  142  ls
+  143  touch test
+  144  git status
+  145  git add test
+  146  git status
+  147  git commit -m "first commit" test
+  148  git config --global
+  149  git config --global --get
+  150  git config --get --global
+  151  git config --global --get-all
+  152  git config --global get
+  153  git config --get global
+  154  git config --get --global.config
+  155  git config --global --get --defauly
+  156  git config --global --get --default
+  157  git config --global --default  --get
+  158  git config --global
+  159  git config --global --edit
+  160  git config --system --edit
+  161  git config --local --edit
+  162  git config --worktree --edit
+  163  git config --global user.name="HRB"
+  164  git config --global user.name "HRB"
+  165  git config --global user.email "info@mjit.in"
+  166  git config --global --edit
+  167* 
+  168  git commit -m "first commit" test
+  169  git push
+  170   git remote add origin ssh://admin@192.168.99.101:29418/firstrepo.git
+  171  git status
+  172  git log
+  173  git show
+  174  git push --help
+  175  git push
+  176  git push --set-upstream origin master
+  177  touch adjqisdjhoin
+  178  touch adjqisdjhoindasdas
+  179  touch adjq
+  180  git status
+  181  git add .
+  182  git status
+  183  ls
+  184  rm test
+  185  git status
+  186  git commit -m "2nd commit" .
+  187  ls
+  188  rm test
+  189  git status
+  190  git push
+  191  git branch test
+  192  git branch --help
+  193  git branch --list
+  194  git switch test
+  195  ls
+  196  git push
+  197   git push --set-upstream origin test
+  198  cd ..
+  199  ls
+  200  mkdir flowrepo
+  201  cd flow
+  202  cd flowrepo/
+  203  ls
+  204  git flow init
+  205  git flow feature start firstfile
+  206  touch test
+  207  vim test
+  208  git flow feature --help
+  209  git flow feature 
+  210  git flow feature firstfile
+  211  git flow feature finish firstfile
+  212  ls
+  213  git flow release create v1.0
+  214  git flow release start v1.0
+  215  git commit -m "first commit"
+  216  git commit -m "first commit" test
+  217  ls
+  218  git add .
+  219  git add test
+  220  git commit -m "first commit" test
+  221  git status
+  222   git flow release finish 'v1.0'
+  223  git remote add origin ssh://admin@192.168.99.101:29418/flowrepo.git
+  224  git push -u origin v1.0
+  225* git push
+  226  git push --set-upstream
+  227  git push --help
+  228  git push --all
+  229  git push --set-upstream
+  230  history >> /d/history24-09-19-git.txt
+  231  clear
+  232  docker container prune
+  233  docker ps
+  234  docker container rm netadd3 volume_test
+  235  docker container rm --force netadd3 volume_test
+  236  docker ps
+  237  clear
+  238  cd ~
+  239  clear
+  240  docker volumen ls
+  241  docker volume ls
+  242  docker run -dit --name "jenkins" -port 9090:8080 -p 50000:50000 -mount type=volume,source=volume1,target=/var/jenkins_home jenkins
+  243* docker run -d --name "jenkins1" -p 9090:8080 -p 50000:50000 --mount type=volume,sourc[Be=volume1,target=/var/jenkins_home jenkins
+  244  docker ps
+  245  docker-machine ls
+  246  docker container exec jenkins1  "cat /var/jenkins_home/secrets/initialAdminPassword"
+  247  docker-machine ssh sgfirst
+  248  docker container exec jenkins1  cat /var/jenkins_home/secrets/initialAdminPassword
+  249  docker pull ansible/centos7-ansible
+  250  docker image ls
+  251  docker image save jacekkow/gitblit -o .
+  252  cd /d
+  253  docker image save jacekkow/gitblit -o .
+  254  docker image save jacekkow/gitblit -o jacekkow_gitblit.tar
+  255  docker image ls
+  256  docker image ls
+  257  docker image save ansible/centos7-ansible -o ansible_centos7-ansible.tar
+  258  docker image save jenkins -o jenkins_jenkins
+  259  docker image save jenkins -o jenkins_jenkins.tar
+  260  history >> history24-09-19-Jenkins-Ansible-1.txt
